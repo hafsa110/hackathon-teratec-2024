@@ -66,8 +66,7 @@ Compute time 1 year-core so an algortihm 10000*2*40 times more efficient than Ze
 const double pi = 3.1415926535897932385;
 typedef unsigned long      ui32;
 typedef unsigned long long ui64;
-const double two_d_pi = 2.0/pi;
-const double invert_two_d_pi = 1.0/2.0/pi;
+const double two_pi = 2.0*pi;
 
 inline double dml_micros()
 {
@@ -83,18 +82,10 @@ inline int even(int n)
 	else          return(-1);
 }
 
-inline double theta(double t)
-{
-	return(t/2.0*log(t/2.0/pi) - t/2.0 - pi/8.0 + 1.0/48.0/t + 7.0/5760.0/pow(t,3.0) + 31.0/80640.0/powl(t,5.0) +127.0/430080.0/powl(t,7.0)+511.0/1216512.0/powl(t,9.0));
-	//https://oeis.org/A282898  // numerators
-	//https://oeis.org/A114721  // denominators
-}
-
-
 double C(int n, double z){
 	if (n==0)
-		  return(.38268343236508977173 * pow(z, 0.0)
-			+.43724046807752044936 * pow(z, 2.0)
+		  return(.38268343236508977173
+			+.43724046807752044936 * (z * z)
 			+.13237657548034352332 * pow(z, 4.0)
 			-.01360502604767418865 * pow(z, 6.0)
 			-.01356762197010358089 * pow(z, 8.0)
@@ -116,8 +107,8 @@ double C(int n, double z){
 			+.00000000000000000058 * pow(z,40.0)
 			+.00000000000000000015 * pow(z,42.0));
 	else if (n==1)
-		 return(-.02682510262837534703 * pow(z, 1.0)
-			+.01378477342635185305 * pow(z, 3.0)
+		 return(-.02682510262837534703 * z
+			+.01378477342635185305 * (z * z * z)
 			+.03849125048223508223 * pow(z, 5.0)
 			+.00987106629906207647 * pow(z, 7.0)
 			-.00331075976085840433 * pow(z, 9.0)
@@ -141,7 +132,7 @@ double C(int n, double z){
 			+.00000000000000000001 * pow(z,45.0));
 else if (n==2)
 		 return(+.00518854283029316849 
-			+.00030946583880634746 * pow(z, 2.0)
+			+.00030946583880634746 * (z * z) 
 			-.01133594107822937338 * pow(z, 4.0)
 			+.00223304574195814477 * pow(z, 6.0)
 			+.00519663740886233021 * pow(z, 8.0)
@@ -166,7 +157,7 @@ else if (n==2)
 			+.00000000000000000003 * pow(z,46.0));
 else if (n==3)
 		 return(-.00133971609071945690 * z
-			+.00374421513637939370 * pow(z, 3.0)
+			+.00374421513637939370 * (z * z * z)
 			-.00133031789193214681 * pow(z, 5.0)
 			-.00226546607654717871 * pow(z, 7.0)
 			+.00095484999985067304 * pow(z, 9.0)
@@ -191,7 +182,7 @@ else if (n==3)
 			+.00000000000000000004 * pow(z,47.0));
 else
 		 return(+.00046483389361763382
-			-.00100566073653404708 * pow(z, 2.0)
+			-.00100566073653404708 * z * z 
 			+.00024044856573725793 * pow(z, 4.0)
 			+.00102830861497023219 * pow(z, 6.0)
 			-.00076578610717556442 * pow(z, 8.0)
@@ -225,13 +216,13 @@ double Z(double t, int n)
 {
 	double p; /* fractional part of sqrt(t/(2.0*pi))*/
 	double C(int,double); /* coefficient of (2*pi/t)^(k*0.5) */
-	int N = sqrt(t/(2.0 * pi)); 
-	p = sqrt(t/(2.0 * pi)) - N; 
-	double tt = theta(t); 
+	int N = sqrt(t/two_pi); 
+	p = sqrt(t/two_pi) - N; 
+	double tt = (t/2.0*log(t/2.0/pi) - t/2.0 - pi/8.0 + 1.0/48.0/t + 7.0/5760.0/pow(t,3.0) + 31.0/80640.0/powl(t,5.0) +127.0/430080.0/powl(t,7.0)+511.0/1216512.0/powl(t,9.0));
 	double ZZ = 0.0; 
 	double t_invert = 1.0/t; 
-	const double inv_sqrt_2Pi = 1.0 / sqrt(2.0 * pi);
  
+	#pragma omp parallel for reduction(+:ZZ) schedule(dynamic)
 	for (int j=1;j <= N;j++) {
 		const double sqrt_j = sqrt(static_cast<double>(j));
     	const double log_j = log(static_cast<double>(j));
@@ -239,10 +230,13 @@ double Z(double t, int n)
 	} 
 	ZZ = 2.0 * ZZ; 
 	double R  = 0.0; 
+
+	#pragma omp parallel for reduction(+:R) schedule(dynamic)
 	for (int k=0;k <= n;k++) {
 		R = R + C(k,2.0*p-1.0) * pow(2.0*pi*t_invert, ((double) k)*0.5);
 	} 
 	R = even(N-1) * pow(2.0 * pi * t_invert,0.25) * R; 
+	
 	return(ZZ + R);
 }
 
@@ -368,7 +362,7 @@ int main(int argc,char **argv)
                 std::cout << argv[0] << " START END SAMPLING" << std::endl;
                 return -1;
         }
-	double estimate_zeros=theta(UPPER)/pi;
+	double estimate_zeros=(UPPER/2.0*log(UPPER/2.0/pi) - UPPER/2.0 - pi/8.0 + 1.0/48.0/UPPER + 7.0/5760.0/pow(UPPER,3.0) + 31.0/80640.0/powl(UPPER,5.0) +127.0/430080.0/powl(UPPER,7.0)+511.0/1216512.0/powl(UPPER,9.0))/pi;
 	printf("I estimate I will find %1.3lf zeros\n",estimate_zeros);
 
 	double STEP = 1.0/SAMP;

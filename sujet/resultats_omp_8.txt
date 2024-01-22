@@ -1,0 +1,10 @@
+I estimate I will find 647.616 zeros
+I found 649 Zeros in 1.019 seconds
+I estimate I will find 10141.965 zeros
+I found 10142 Zeros in 1.083 seconds
+I estimate I will find 138067.558 zeros
+I found 137931 Zeros in 11.276 seconds
+I estimate I will find 138067.558 zeros
+I found 138069 Zeros in 109.108 seconds
+I estimate I will find 1747144.509 zeros
+I found 1747140 Zeros in 1274.778 seconds
