@@ -9,6 +9,7 @@
 #include <vector>
 #include <cassert>
 
+
 /*************************************************************************
 * *
 
@@ -62,10 +63,13 @@ Compute time 1 year-core so an algortihm 10000*2*40 times more efficient than Ze
 * *
 *************************************************************************/
 
+const double pi = 3.1415926535897932385;
 typedef unsigned long      ui32;
 typedef unsigned long long ui64;
+const double two_d_pi = 2.0/pi;
+const double invert_two_d_pi = 1.0/2.0/pi;
 
-double dml_micros()
+inline double dml_micros()
 {
         static struct timezone tz;
         static struct timeval  tv;
@@ -73,15 +77,14 @@ double dml_micros()
         return((tv.tv_sec*1000000.0)+tv.tv_usec);
 }
 
-int even(int n)
+inline int even(int n)
 {
 	if (n%2 == 0) return(1);
 	else          return(-1);
 }
 
-double theta(double t)
+inline double theta(double t)
 {
-	const double pi = 3.1415926535897932385;
 	return(t/2.0*log(t/2.0/pi) - t/2.0 - pi/8.0 + 1.0/48.0/t + 7.0/5760.0/pow(t,3.0) + 31.0/80640.0/powl(t,5.0) +127.0/430080.0/powl(t,7.0)+511.0/1216512.0/powl(t,9.0));
 	//https://oeis.org/A282898  // numerators
 	//https://oeis.org/A114721  // denominators
@@ -137,7 +140,7 @@ double C(int n, double z){
 			+.00000000000000000036 * pow(z,43.0)
 			+.00000000000000000001 * pow(z,45.0));
 else if (n==2)
-		 return(+.00518854283029316849 * pow(z, 0.0)
+		 return(+.00518854283029316849 
 			+.00030946583880634746 * pow(z, 2.0)
 			-.01133594107822937338 * pow(z, 4.0)
 			+.00223304574195814477 * pow(z, 6.0)
@@ -162,7 +165,7 @@ else if (n==2)
 			+.00000000000000000044 * pow(z,44.0)
 			+.00000000000000000003 * pow(z,46.0));
 else if (n==3)
-		 return(-.00133971609071945690 * pow(z, 1.0)
+		 return(-.00133971609071945690 * z
 			+.00374421513637939370 * pow(z, 3.0)
 			-.00133031789193214681 * pow(z, 5.0)
 			-.00226546607654717871 * pow(z, 7.0)
@@ -187,7 +190,7 @@ else if (n==3)
 			+.00000000000000000033 * pow(z,45.0)
 			+.00000000000000000004 * pow(z,47.0));
 else
-		 return(+.00046483389361763382 * pow(z, 0.0)
+		 return(+.00046483389361763382
 			-.00100566073653404708 * pow(z, 2.0)
 			+.00024044856573725793 * pow(z, 4.0)
 			+.00102830861497023219 * pow(z, 6.0)
@@ -222,20 +225,24 @@ double Z(double t, int n)
 {
 	double p; /* fractional part of sqrt(t/(2.0*pi))*/
 	double C(int,double); /* coefficient of (2*pi/t)^(k*0.5) */
-	const double pi = 3.1415926535897932385; 
 	int N = sqrt(t/(2.0 * pi)); 
 	p = sqrt(t/(2.0 * pi)) - N; 
 	double tt = theta(t); 
 	double ZZ = 0.0; 
+	double t_invert = 1.0/t; 
+	const double inv_sqrt_2Pi = 1.0 / sqrt(2.0 * pi);
+ 
 	for (int j=1;j <= N;j++) {
+		const double sqrt_j = sqrt(static_cast<double>(j));
+    	const double log_j = log(static_cast<double>(j));
 		ZZ = ZZ + 1.0/sqrt((double) j ) * cos(fmod(tt -t*log((double) j),2.0*pi));
 	} 
 	ZZ = 2.0 * ZZ; 
 	double R  = 0.0; 
 	for (int k=0;k <= n;k++) {
-		R = R + C(k,2.0*p-1.0) * pow(2.0*pi/t, ((double) k)*0.5);
+		R = R + C(k,2.0*p-1.0) * pow(2.0*pi*t_invert, ((double) k)*0.5);
 	} 
-	R = even(N-1) * pow(2.0 * pi / t,0.25) * R; 
+	R = even(N-1) * pow(2.0 * pi * t_invert,0.25) * R; 
 	return(ZZ + R);
 }
 
@@ -248,9 +255,9 @@ double Z(double t, int n)
 */
 std::complex <double> test_zerod(const double zero,const int N)
 {
-        std::complex <double> un(1.0,0);  
-        std::complex <double> deux(2.0,0); 
-        std::complex <double> c1(0.5,zero);
+        const std::complex <double> un(1.0,0);  
+        const std::complex <double> deux(2.0,0); 
+        const std::complex <double> c1(0.5,zero);
         std::complex <double> sum1(0.0,0.0);
         std::complex <double> sum2(0.0,0.0);
         std::complex <double> p1=un/(un-pow(deux,un-c1));
@@ -303,9 +310,9 @@ void test_one_zero(double t)
 void tests_zeros()
 {
 	test_one_zero(14.1347251417346937904572519835625);
-        test_one_zero(101.3178510057313912287854479402924);
-        test_one_zero(1001.3494826377827371221033096531063);
-        test_one_zero(10000.0653454145353147502287213889928);
+    test_one_zero(101.3178510057313912287854479402924);
+    test_one_zero(1001.3494826377827371221033096531063);
+    test_one_zero(10000.0653454145353147502287213889928);
 
 }
 
@@ -350,7 +357,6 @@ void test_fileof_zeros(const char *fname)
 int main(int argc,char **argv)
 {
 	double LOWER,UPPER,SAMP;
-	const double pi = 3.1415926535897932385;
 	//tests_zeros();
 	//test_fileof_zeros("ZEROS");
 	try {
