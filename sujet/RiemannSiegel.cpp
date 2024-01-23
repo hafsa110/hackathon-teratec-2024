@@ -261,8 +261,12 @@ double Z(double t, int n, std::vector<double>tab_j_sqrt, std::vector<double> tab
 	double ZZ = 0.0; 
 	double t_invert = 1.0/t; 
 	double tinvert2pi = two_pi * t_invert;
+	int j = 1;
  
-	for (int j=1;j <= N;j++) {
+	//#pragma omp parallel private(j) shared(tab_j_sqrt, tab_j_log, tt, t) 
+	// for reduction(+:ZZ) schedule(static)
+	//#pragma omp parallel for reduction(+:ZZ)
+	for (j=1;j <= N;j++) {
 		ZZ += tab_j_sqrt[j] * cos(fmod(tt -t* tab_j_log[j],two_pi));
 		//ZZ += 1.0/sqrt((double) j ) * cos(fmod(tt -t*log((double) j),2.0*pi));
 	} 
