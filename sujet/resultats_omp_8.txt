@@ -8,3 +8,16 @@ I estimate I will find 138067.558 zeros
 I found 138069 Zeros in 109.108 seconds
 I estimate I will find 1747144.509 zeros
 I found 1747140 Zeros in 1274.778 seconds
+Problem 10 1000 100
+I estimate I will find 647.616 zeros
+I found 49139 Zeros in 0.089 seconds
+Problem 10 10000 10
+I estimate I will find 10141.965 zeros
+I found 49915 Zeros in 0.106 seconds
+Problem 10 100000 10
+I estimate I will find 138067.558 zeros
+I found 497311 Zeros in 1.593 seconds
+Problem 10 100000 100
+I estimate I will find 138067.558 zeros
+I found 4980267 Zeros in 14.353 seconds
+Problem 10 1000000 100

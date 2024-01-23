@@ -233,7 +233,7 @@ else
 			+.00000000000000000004 * (z46 * z2));
 }
 
-double Z(double t, int n)
+double Z(double t, int n, std::vector<std::pair<double, double>> tab_j)
 //*************************************************************************
 // Riemann-Siegel Z(t) function implemented per the Riemenn Siegel formula.
 // See http://mathworld.wolfram.com/Riemann-SiegelFormula.html for details
@@ -249,9 +249,7 @@ double Z(double t, int n)
 	double tinvert2pi = two_pi * t_invert;
  
 	for (int j=1;j <= N;j++) {
-		const double sqrt_j = sqrt(static_cast<double>(j));
-    	const double log_j = log(static_cast<double>(j));
-		ZZ += 1.0/sqrt_j * cos(fmod(tt -t* log_j,two_pi));
+		ZZ += tab_j[j].first * cos(fmod(tt -t* tab_j[j].second,two_pi));
 	} 
 
 	ZZ *= 2.0; 
@@ -319,9 +317,9 @@ std::complex <double> test_zerod(const double zero,const int N)
         return(rez);
 }
 
-void test_one_zero(double t)
+void test_one_zero(double t, std::vector<std::pair<double, double>> tab_j)
 {
-	double RS=Z(t,4);
+	double RS=Z(t,4,tab_j);
 	std::complex <double> c1=test_zerod(t,10);
 	std::complex <double> c2=test_zerod(t,100);
 	std::complex <double> c3=test_zerod(t,1000);
@@ -330,12 +328,12 @@ void test_one_zero(double t)
 	
 }
 
-void tests_zeros()
+void tests_zeros(std::vector<std::pair<double, double>> tab_j)
 {
-	test_one_zero(14.1347251417346937904572519835625);
-    test_one_zero(101.3178510057313912287854479402924);
-    test_one_zero(1001.3494826377827371221033096531063);
-    test_one_zero(10000.0653454145353147502287213889928);
+	test_one_zero(14.1347251417346937904572519835625, tab_j);
+    test_one_zero(101.3178510057313912287854479402924, tab_j);
+    test_one_zero(1001.3494826377827371221033096531063, tab_j);
+    test_one_zero(10000.0653454145353147502287213889928, tab_j);
 
 }
 
@@ -361,7 +359,7 @@ void tests_zeros()
 */
 
 char line[1024];
-void test_fileof_zeros(const char *fname)
+void test_fileof_zeros(const char *fname, std::vector<std::pair<double, double>> tab_j)
 {
 	FILE *fi=fopen(fname,"r");
 	assert(fi!=NULL);
@@ -370,11 +368,25 @@ void test_fileof_zeros(const char *fname)
 		fgets(line,1000,fi);
 		if(feof(fi))break;
 		sscanf(line,"%lf",&t);
-		RS=Z(t,4);
+		RS=Z(t,4, tab_j);
 		printf(" %30.20lf %30.20lf   %s",t,RS,line);
 	}
 	fclose(fi);
 }
+
+std::vector<std::pair<double, double>> calculateValues(int Nmax) {
+    std::vector<std::pair<double, double>> tab_j;
+
+    for (int j = 0; j <= Nmax; ++j) {
+        double sqrt_j = 1.0 / sqrt(static_cast<double>(j));
+        double log_j = log(static_cast<double>(j));
+
+        tab_j.push_back({sqrt_j, log_j});
+    }
+
+    return tab_j;
+}
+
 
 int main(int argc,char **argv)
 {
@@ -399,10 +411,13 @@ int main(int argc,char **argv)
 	double count=0.0;
 	double t1=dml_micros();
 	
-	#pragma omp parallel for reduction(+:count) schedule(dynamic)
+	int maxN = ceil(sqrt(UPPER / two_pi)); //Modif NMAX 
+	std::vector<std::pair<double, double>> tab_j = calculateValues(maxN); //précalcul des log(j) et 1/sqrt(j)
+
+	#pragma omp parallel for reduction(+:count)
 	for (int i = 0; i <= static_cast<int>((UPPER - LOWER) / STEP); i++) {
     	double t = LOWER + i * STEP;
-		double zout=Z(t,4);
+		double zout=Z(t,4, tab_j);
 		if(t>LOWER){
 			if(   ((zout<0.0)and(prev>0.0))
 			    or((zout>0.0)and(prev<0.0))){
