@@ -4,3 +4,13 @@ I estimate I will find 10141.965 zeros
 I found 49639 Zeros in 0.058 seconds
 I estimate I will find 138067.558 zeros
 I found 498575 Zeros in 1.006 seconds
+Problem 10 1000 100
+I estimate I will find 647.616 zeros
+I found 41800 Zeros in 0.011 seconds
+Problem 10 10000 10
+I estimate I will find 10141.965 zeros
+I found 49666 Zeros in 0.018 seconds
+Problem 10 100000 10
+I estimate I will find 138067.558 zeros
+I found 497585 Zeros in 0.559 seconds
+Problem 10 100000 100
