@@ -1,4 +1,4 @@
-    Exec                      |   Time (10 10000 100) en secs     |   Comments
+    Exec                      |   Time (10 100000 100) en secs    |   Comments
 =========================================================================================
 RiemannSiegel.acfl.orig       |                 95.240            | Original code no comment
 RiemannSiegel.acfl.inline     |                 86.415            | Inlining Z, C, Theta, even functions + compile time math constants
@@ -7,4 +7,4 @@ RiemannSiegel.acfl.C          |                 14.511            | Horner schem
 RiemannSiegel.acfl.Z1         |                 11.435            | Consts + ARM intrisics + Memoization + Conversion des puissances en racine carrée
 RiemannSiegel.acfl.Z2         |                 4.945             | Optimization des fmod (cf. Mehdi) : https://stackoverflow.com/questions/26342823/implementation-of-fmod-function
 RiemannSiegel.acfl.Z3         |                 3.468             | Intrisinc du sin (conversion depuis cos) / Taylor / Horner
-RiemannSiegel.acfl.ZX         |                 0.077             | Tout frère
+RiemannSiegel.acfl.ZX         |                 0.077             | Parallélisation avec OpenMP
