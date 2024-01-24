@@ -8,7 +8,7 @@
 #include <complex>
 #include <vector>
 #include <cassert>
-
+#include <omp.h>
 
 /*************************************************************************
 * *
@@ -417,49 +417,64 @@ std::vector<double> calculateValuesLog(int Nmax) {
     return tab_j;
 }
 
+int main(int argc, char **argv) {
+    double LOWER, UPPER, SAMP;
 
-int main(int argc,char **argv)
-{
-	double LOWER,UPPER,SAMP;
-	//tests_zeros();
-	//test_fileof_zeros("ZEROS");
-	try {
-		LOWER=std::atof(argv[1]);
-		UPPER=std::atof(argv[2]);
-		SAMP =std::atof(argv[3]);
-	}
-	catch (...) {
-                std::cout << argv[0] << " START END SAMPLING" << std::endl;
-                return -1;
-        }
-	double estimate_zeros=(UPPER/2.0*log(UPPER/2.0/pi) - UPPER/2.0 - pi/8.0 + 1.0/48.0/UPPER + 7.0/5760.0/pow(UPPER,3.0) + 31.0/80640.0/powl(UPPER,5.0) +127.0/430080.0/powl(UPPER,7.0)+511.0/1216512.0/powl(UPPER,9.0))/pi;
-	printf("I estimate I will find %1.3lf zeros\n",estimate_zeros);
+    try {
+        LOWER = std::atof(argv[1]);
+        UPPER = std::atof(argv[2]);
+        SAMP = std::atof(argv[3]);
+    } catch (...) {
+        std::cout << argv[0] << " START END SAMPLING" << std::endl;
+        return -1;
+    }
 
-	double STEP = 1.0/SAMP;
-	ui64   NUMSAMPLES=floor((UPPER-LOWER)*SAMP+1.0);
-	double prev=0.0;
-	double count=0.0;
-	double t1=dml_micros();
+    double estimate_zeros = (UPPER / 2.0 * log(UPPER / 2.0 / pi) - UPPER / 2.0 - pi / 8.0 + 1.0 / 48.0 / UPPER +
+                             7.0 / 5760.0 / pow(UPPER, 3.0) + 31.0 / 80640.0 / pow(UPPER, 5.0) +
+                             127.0 / 430080.0 / powl(UPPER, 7.0) + 511.0 / 1216512.0 / powl(UPPER, 9.0)) / pi;
+    printf("I estimate I will find %1.3lf zeros\n", estimate_zeros);
+
+    double STEP = 1.0 / SAMP;
+    ui64 NUMSAMPLES = floor((UPPER - LOWER) * SAMP + 1.0);
+    double count = 0.0;
+
+    int maxN = ceil(sqrt(UPPER / two_pi));
+    std::vector<double> tab_j_sqrt = calculateValuesSqrt(maxN);
+    std::vector<double> tab_j_log = calculateValuesLog(maxN);
+
+    const int num_chunks = omp_get_max_threads(); 
+    const int chunk_size = (NUMSAMPLES + num_chunks - 1) / num_chunks;
 	
-	int maxN = ceil(sqrt(UPPER / two_pi)); //Modif NMAX 
-	std::vector<double> tab_j_sqrt = calculateValuesSqrt(maxN); //précalcul des log(j) et 1/sqrt(j)
-	std::vector<double> tab_j_log = calculateValuesLog(maxN);
+	bool is_first = true;
+	double prev_private = 0.0;
+	double t1=dml_micros();
+    #pragma omp parallel
+    {
+        int num_threads = omp_get_num_threads();
 
-	for (double t=LOWER;t<=UPPER;t+=STEP){
-		double zout=Z(t,4, tab_j_sqrt, tab_j_log);
-		if(t>LOWER){
-			if(   ((zout<0.0)and(prev>0.0))
-			    or((zout>0.0)and(prev<0.0))){
-				//printf("%20.6lf  %20.12lf %20.12lf\n",t,prev,zout);
-				count++;
+        #pragma omp for schedule(static, chunk_size) nowait firstprivate(is_first, prev_private) reduction(+: count)
+        for (int i = 1; i <= NUMSAMPLES; i++) {
+            double t = LOWER + i * STEP;
+
+            if(is_first && i>1){
+				prev_private = Z(t-STEP, 4, tab_j_sqrt, tab_j_log);
+				is_first = false;
 			}
-		}
-		prev=zout;
-	}
+
+            double zout = Z(t, 4, tab_j_sqrt, tab_j_log);
+
+            if (t > LOWER) {
+                if (((zout < 0.0) && (prev_private > 0.0)) || ((zout > 0.0) && (prev_private < 0.0))) {
+                    count++;
+                }
+            }
+
+            prev_private = zout;
+        }
+    }
+
 	double t2=dml_micros();
 	printf("I found %1.0lf Zeros in %.3lf seconds\n",count,(t2-t1)/1000000.0);
-	return(0);
+
+    return 0;
 }
-
-
-
