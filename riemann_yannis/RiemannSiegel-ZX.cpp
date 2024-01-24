@@ -495,7 +495,13 @@ int main(int argc,char **argv)
 	MEM_INV_SQRT_J = (double*) malloc(sizeof(double) * (Nmax + 1));
 	MEM_LOG_J = (double*) malloc(sizeof(double) * (Nmax + 1));
 
-	#pragma omp parallel for schedule(static)
+	// Recupération nom de threads
+	int num_chunks = 0;
+
+	#pragma omp parallel master
+	num_chunks = omp_get_max_threads(); 
+
+	#pragma omp parallel for schedule(static, num_chunks)
 	for (int j = 0; j <= Nmax; ++j) {
 		double sqrt_j = 1.0 / sqrt( static_cast<double>(j) );
 		double log_j = log( static_cast<double>(j) );
@@ -503,11 +509,6 @@ int main(int argc,char **argv)
 		MEM_INV_SQRT_J[j] = sqrt_j;
 		MEM_LOG_J[j] = log_j;
 	}
-
-	int num_chunks = 0;
-
-	#pragma omp parallel master
-	num_chunks = omp_get_max_threads(); 
 
     int chunk_size = 1 + (NUMSAMPLES + num_chunks - 1) / num_chunks;
 	
