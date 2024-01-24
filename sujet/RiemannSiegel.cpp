@@ -255,35 +255,20 @@ double Z(double t, int n, std::vector<double>tab_j_sqrt, std::vector<double> tab
 {
 	double p; /* fractional part of sqrt(t/(2.0*pi))*/
 	double C(int,double); /* coefficient of (2*pi/t)^(k*0.5) */
-	int N = sqrt(t/two_pi); 
-	p = sqrt(t/two_pi) - N; 
-	double tt = theta(t);
+	const double pi = 3.1415926535897932385; 
+	int N = sqrt(t/(2.0 * pi)); 
+	p = sqrt(t/(2.0 * pi)) - N; 
+	double tt = theta(t); 
 	double ZZ = 0.0; 
-	double t_invert = 1.0/t; 
-	double tinvert2pi = two_pi * t_invert;
-	int j = 1;
- 
-	//#pragma omp parallel private(j) shared(tab_j_sqrt, tab_j_log, tt, t) 
-	// for reduction(+:ZZ) schedule(static)
-	
-	//#pragma omp parallel for reduction(+:ZZ) private(j) shared(tab_j_sqrt, tab_j_log, tt, t) schedule(static, 16)
-	for (j=1;j <= N;j++) {
-		ZZ += tab_j_sqrt[j] * cos(fmod(tt -t* tab_j_log[j],two_pi));
-		//ZZ += 1.0/sqrt((double) j ) * cos(fmod(tt -t*log((double) j),2.0*pi));
+	for (int j=1;j <= N;j++) {
+		ZZ = ZZ + 1.0/sqrt((double) j ) * cos(fmod(tt -t*log((double) j),2.0*pi));
 	} 
-
-	ZZ *= 2.0; 
+	ZZ = 2.0 * ZZ; 
 	double R  = 0.0; 
-
-	//n est tjrs egal à 4 lors des appels, on enleve la boucle 
-	R = C(0, 2.0 * p - 1.0) 
-    + C(1, 2.0 * p - 1.0) * pow(tinvert2pi, 0.5)
-    + C(2, 2.0 * p - 1.0) * (tinvert2pi)
-    + C(3, 2.0 * p - 1.0) * pow(tinvert2pi, 1.5)
-    + C(4, 2.0 * p - 1.0) * (tinvert2pi) * (tinvert2pi);
-
-	R = even(N - 1) * pow(tinvert2pi, 0.25) * R;
-	
+	for (int k=0;k <= n;k++) {
+		R = R + C(k,2.0*p-1.0) * pow(2.0*pi/t, ((double) k)*0.5);
+	} 
+	R = even(N-1) * pow(2.0 * pi / t,0.25) * R; 
 	return(ZZ + R);
 }
 
@@ -443,7 +428,7 @@ int main(int argc, char **argv) {
     std::vector<double> tab_j_log = calculateValuesLog(maxN);
 
     const int num_chunks = omp_get_max_threads(); 
-    const int chunk_size = (NUMSAMPLES + num_chunks - 1) / num_chunks;
+    const int chunk_size = 1+(NUMSAMPLES + num_chunks - 1) / num_chunks;
 	
 	bool is_first = true;
 	double prev_private = 0.0;
