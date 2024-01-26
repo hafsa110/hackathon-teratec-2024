@@ -6,6 +6,8 @@ cxxs = {
     "gnu": "g++ -O3 -march=native -fopenmp",
 }
 
+print(@"source env.sh")
+os.system("source env.sh")
 os.makedirs('./bin/', exist_ok=True)
 for (tag, cxx) in cxxs.items():
     for rev in revs:
