@@ -7,7 +7,7 @@ python3 build.py
 
 ## Benchmarks
 
-| Exec                     | Time (10^5 100 100) in secs | Comments                                                    |
+| Exec                     | Time (10 100000 100) in secs | Comments                                                    |
 |--------------------------|-----------------------------|-------------------------------------------------------------|
 | RiemannSiegel.acfl.orig  | 95.240                      | Original code, no comment                                    |
 | RiemannSiegel.acfl.inline | 86.415                      | Inlining Z, C, Theta, even functions + compile-time math constants |
