@@ -2,6 +2,7 @@
 
 Build all execs using: 
 ```python
+source env.sh
 python3 build.py
 ```
 

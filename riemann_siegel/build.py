@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import os
 
 revs = ["orig", "inline", "theta", "C", "Z1", "Z2", "Z3", "ZX"]
@@ -6,11 +7,13 @@ cxxs = {
     "gnu": "g++ -O3 -march=native -fopenmp",
 }
 
-print(@"source env.sh")
-os.system("source env.sh")
-os.makedirs('./bin/', exist_ok=True)
+def run(cmd):
+    print(f"@ {cmd}")
+    os.system(cmd)
+
+run("mkdir -p ./bin/")
 for (tag, cxx) in cxxs.items():
     for rev in revs:
         cmd = f"{cxx} RiemannSiegel-{rev}.cpp -o ./bin/RiemannSiegel.{tag}.{rev}"
-        print(f"@ {cmd}")
-        os.system(cmd)
+        run(cmd)
+print(f"Done building {len(cxxs) * len(revs)} execs.")

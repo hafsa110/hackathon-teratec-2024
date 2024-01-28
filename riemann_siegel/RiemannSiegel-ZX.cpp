@@ -498,7 +498,7 @@ int main(int argc,char **argv)
 	// Recupération nom de threads
 	int num_chunks = 0;
 
-	#pragma omp parallel master
+	#pragma omp single
 	num_chunks = omp_get_max_threads(); 
 
 	#pragma omp parallel for schedule(static, num_chunks)
