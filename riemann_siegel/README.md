@@ -14,7 +14,7 @@ python3 build.py
 | RiemannSiegel.acfl.inline | 86.415                      | Inlining Z, C, Theta, even functions + compile-time math constants |
 | RiemannSiegel.acfl.theta  | 20.930                      | Horner scheme + ARM intrinsics                                |
 | RiemannSiegel.acfl.C      | 14.511                      | Horner scheme + ARM intrinsics + Memoization                   |
-| RiemannSiegel.acfl.Z1     | 11.435                      | Consts + ARM intrinsics + Memoization + Conversion des puissances en racine carrée |
-| RiemannSiegel.acfl.Z2     | 4.945                       | Optimization des fmod (cf. Mehdi) : https://stackoverflow.com/questions/26342823/implementation-of-fmod-function |
-| RiemannSiegel.acfl.Z3     | 2.550                       | Intrinsic du sin (conversion depuis cos) / Taylor / Horner  |
-| RiemannSiegel.acfl.ZX     | 0.054                       | Parallélisation avec OpenMP + Compile avec flag -mcpu=neoverse-v1 |
+| RiemannSiegel.acfl.Z1     | 11.435                      | Consts + ARM intrinsics + Memoization + powers to square-roots |
+| RiemannSiegel.acfl.Z2     | 4.945                       | FMOD optimization : https://stackoverflow.com/questions/26342823/implementation-of-fmod-function |
+| RiemannSiegel.acfl.Z3     | 2.550                       | sin computation (transformation from cos) / Taylor / Horner  |
+| RiemannSiegel.acfl.ZX     | 0.054                       | Parralel code w/ OpenMP + compilation w/ flag -mcpu=neoverse-v1 |
