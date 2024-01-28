@@ -8,7 +8,7 @@ Install dependencies
 
 Unzip telemac archive in `build` directory
 
-Copy `configs` folders into the telemac directories
+Copy `configs` folder into the telemac directories
 
 Copy the pysource you want to use (eg. which compiler)
 
