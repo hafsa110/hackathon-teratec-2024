@@ -5,12 +5,17 @@ export ROOTDIR=$(pwd)
 export ARCHDIR=$ROOTDIR/archives
 export BUILDDIR=$ROOTDIR/build
 
-# Purge build dir
+# Purge & setup build dir
 rm -rf $BUILDDIR
+mkdir -p $BUILDDIR
+
+cp env.sh $BUILDDIR
+cp vars.sh $BUILDDIR
+
 cd $BUILDDIR
 
 # Load environnement
-source env.sh
+source $BUILDDIR/env.sh
 
 # Install Python libs
 pip3 install -r ./requirements.txt
@@ -71,11 +76,4 @@ cp *.mod ../include/
 cd $BUILDDIR
 
 # Compile telemac
-# tar xvf $ARCHDIR/telemac-mascaret-v8p5r0.tar.gz
-# export TELDIR=$BUILDDIR/telemac-mascaret-v8p5r0
-# cp pysource.gfortranHPC.sh $TELDIR/configs/
-# cp systel.cfg $TELDIR/configs/
-# cd $TELDIR/configs
-# source pysource.gfortranHPC.sh
-# config.py
-# compile_telemac.py
+# Consult README
