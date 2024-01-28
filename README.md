@@ -1,4 +1,4 @@
-# Hackaton Teratec 2024 Edition
+# Hackaton Teratec 2024 Edition - Team 12
 
 You will find our report in here and also in e-mail we sent you.
 
