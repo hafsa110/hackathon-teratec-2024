@@ -3,13 +3,10 @@
 # Top-level dirs
 export ROOTDIR=$(pwd)
 export ARCHDIR=$ROOTDIR/archives
-export BUILDDIR=$ROOTDIR/build.gnu
-export TEMPLDIR=$ROOTDIR/template
+export BUILDDIR=$ROOTDIR/build
 
 # Purge build dir
 rm -rf $BUILDDIR
-# Copy template
-cp -r $TEMPLDIR $BUILDDIR
 cd $BUILDDIR
 
 # Load environnement
